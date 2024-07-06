@@ -24,6 +24,7 @@ type EditUserRequest struct {
 type ValidateUserRequest struct {
 	UserName string `json:"user_name"`
 	Password string `json:"password"`
+	Email    string `json:"email"`
 	OTP      string `json:"otp"`
 }
 

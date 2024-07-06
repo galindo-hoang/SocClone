@@ -5,6 +5,7 @@ import (
 
 	"github.com/AuthService/models"
 	"github.com/AuthService/utils"
+	"github.com/bradfitz/gomemcache/memcache"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -26,10 +27,20 @@ func InitDatabase(dbName string) error {
 	if err != nil {
 		return err
 	}
-	if err := database.AutoMigrate(&models.User{}); err != nil {
+	if err := database.AutoMigrate(&models.Users{}); err != nil {
 		return err
 	}
 	DB = database
 	fmt.Printf("Connected to database (%v)\n", dbName)
 	return nil
+}
+
+var Cache *memcache.Client
+
+func InitCache() {
+	var (
+		cacheHost = utils.GetValue("CACHE_HOST")
+		cachePort = utils.GetValue("CACHE_PORT")
+	)
+	Cache = memcache.New(fmt.Sprintf("%v:%v", cacheHost, cachePort))
 }

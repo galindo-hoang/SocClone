@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -85,4 +87,30 @@ func generateToken(claims models.TokenClaims, unix int) (string, error) {
 		return "", err
 	}
 	return ss, nil
+}
+
+const otpChars = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM"
+
+func GenerateOTP(length int) (string, error) {
+	buffer := make([]byte, length)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	otpCharsLength := len(otpChars)
+	for i := 0; i < length; i++ {
+		buffer[i] = otpChars[int(buffer[i])%otpCharsLength]
+	}
+
+	return string(buffer), nil
+}
+
+func ToJsonFromByte[T any](val []byte) (T, error) {
+	var data = new(T)
+	err := json.Unmarshal(val, &data)
+	if err != nil {
+		return *data, err
+	}
+	return *data, nil
 }

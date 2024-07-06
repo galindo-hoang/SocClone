@@ -8,5 +8,7 @@ import (
 
 func main() {
 	routes.InitRoutes()
+
+	database.InitCache()
 	database.InitDatabase(utils.GetValue("DB_NAME"))
 }

@@ -57,7 +57,7 @@ func New() {
 	}(ch)
 
 	q, err := ch.QueueDeclare(
-		"task_queue",
+		"mail_queue",
 		false,
 		true,
 		false,

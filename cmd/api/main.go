@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/AuthService/database"
-	"github.com/AuthService/routes"
+	"github.com/AuthService/pkg/database"
+	"github.com/AuthService/pkg/handlers/http"
 	"github.com/AuthService/utils"
 )
 
 func main() {
-	routes.InitRoutes()
-
+	if err := database.InitDatabase(utils.GetValue("DB_NAME")); err != nil {
+		panic(err)
+	}
 	database.InitCache()
-	database.InitDatabase(utils.GetValue("DB_NAME"))
+	http.InitRoutes()
+
 }

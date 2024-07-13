@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/AuthService/models"
+	"github.com/AuthService/pkg/models"
 	"github.com/AuthService/utils"
 	"github.com/bradfitz/gomemcache/memcache"
 	"gorm.io/driver/mysql"
@@ -12,6 +12,7 @@ import (
 
 var DB *gorm.DB
 
+// check connection to database
 func InitDatabase(dbName string) error {
 	var (
 		databaseUser     = utils.GetValue("DB_USER")
@@ -37,10 +38,12 @@ func InitDatabase(dbName string) error {
 
 var Cache *memcache.Client
 
+// check connection to server
 func InitCache() {
 	var (
 		cacheHost = utils.GetValue("CACHE_HOST")
 		cachePort = utils.GetValue("CACHE_PORT")
 	)
 	Cache = memcache.New(fmt.Sprintf("%v:%v", cacheHost, cachePort))
+	fmt.Printf("Cache: %v\n", Cache)
 }

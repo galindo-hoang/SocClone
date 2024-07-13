@@ -1,4 +1,4 @@
-package models
+package model_http
 
 type LoginRequest struct {
 	UserName string `json:"user_name"`
@@ -10,7 +10,7 @@ type SignUpRequest struct {
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Birthday  string `json:"birthday"`
+	Birthday  int64  `json:"birthday"`
 	Password  string `json:"password"`
 }
 

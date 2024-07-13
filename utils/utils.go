@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
-	"github.com/AuthService/models"
+	"github.com/AuthService/pkg/models"
+	modelhttp "github.com/AuthService/pkg/models/http"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
@@ -40,7 +42,7 @@ func ComparePassword(hashedPwd string, plainPwd []byte) error {
 	return nil
 }
 
-func BuildingToken(user models.Users) (models.Token, error) {
+func BuildingToken(user models.Users) (modelhttp.Token, error) {
 	claimsAccessToken := models.TokenClaims{
 		UserName: user.UserName,
 		Image:    user.Image,
@@ -48,7 +50,7 @@ func BuildingToken(user models.Users) (models.Token, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			ID:        string(user.ID),
+			ID:        strconv.Itoa(user.ID),
 		},
 	}
 
@@ -59,20 +61,21 @@ func BuildingToken(user models.Users) (models.Token, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			ID:        string(user.ID),
+			ID:        strconv.Itoa(user.ID),
 		},
 	}
 
 	refreshToken, err := generateToken(claimsRefreshToken, 24*7)
 	if err != nil {
-		return models.Token{}, err
+		return modelhttp.Token{}, err
 	}
 	accessToken, err := generateToken(claimsAccessToken, 24)
+	fmt.Printf("token:::: %s\n", accessToken)
 	if err != nil {
-		return models.Token{}, err
+		return modelhttp.Token{}, err
 	}
 
-	return models.Token{
+	return modelhttp.Token{
 		RefreshToken: refreshToken,
 		AccessToken:  accessToken,
 	}, nil
@@ -81,7 +84,7 @@ func BuildingToken(user models.Users) (models.Token, error) {
 func generateToken(claims models.TokenClaims, unix int) (string, error) {
 	claims.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(unix) * time.Hour))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(GetValue("JWT_SECRET_KEY"))
+	ss, err := token.SignedString([]byte(GetValue("JWT_SECRET_KEY")))
 
 	if err != nil {
 		return "", err
@@ -113,4 +116,18 @@ func ToJsonFromByte[T any](val []byte) (T, error) {
 		return *data, err
 	}
 	return *data, nil
+}
+
+func JSON2Byte[T any](val T) ([]byte, error) {
+	parsedBody, err := json.Marshal(val)
+	if err != nil {
+		return nil, err
+	}
+	return parsedBody, nil
+}
+
+func FailOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

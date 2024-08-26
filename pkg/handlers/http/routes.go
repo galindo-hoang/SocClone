@@ -2,12 +2,16 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 )
 
 func InitRoutes() {
 	var router = gin.New()
 	setupRoutes(router)
-	router.Run(":3000")
+	err := router.Run(":3000")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func setupRoutes(router *gin.Engine) {

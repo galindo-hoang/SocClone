@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/AuthService/pkg/database"
 	"github.com/AuthService/pkg/handlers/http"
+	"github.com/AuthService/pkg/handlers/rpc"
 	"github.com/AuthService/utils"
 )
 
@@ -11,6 +12,6 @@ func main() {
 		panic(err)
 	}
 	database.InitCache()
+	go rpc.NewAuthHandler()
 	http.InitRoutes()
-
 }

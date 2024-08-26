@@ -3,9 +3,10 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
-	"github.com/AuthService/pkg/interal/mq"
+	"github.com/AuthService/pkg/internal/mq"
 	modelhttp "github.com/AuthService/pkg/models/http"
 	"github.com/AuthService/pkg/models/rbmq"
 
@@ -107,6 +108,7 @@ func ValidateSigUnUser(user modelhttp.ValidateUserRequest) (modelhttp.RegisterRe
 	return modelhttp.RegisterResponse{
 		UserName: entity.UserName,
 		Email:    entity.Email,
+		Id:       strconv.Itoa(entity.ID),
 	}, nil
 }
 

@@ -13,8 +13,9 @@ type Users struct {
 	IsActive     bool      `gorm:"column:is_active"`
 	CreateAt     time.Time `gorm:"column:create_at"`
 	LastActiveAt time.Time `gorm:"column:last_active_at"`
+	IsPrivate    bool      `gorm:"column:is_private"`
 	Image        string    `gorm:"column:path"`
-	Email        string
+	Email        string    `gorm:"column:email"`
 }
 
 type TokenClaims struct {

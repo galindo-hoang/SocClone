@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -129,5 +130,41 @@ func JSON2Byte[T any](val T) ([]byte, error) {
 func FailOnError(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+func ValidateTokenWithId(token string, id string) error {
+	parsedToken, err := jwt.ParseWithClaims(token, &models.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(GetValue("JWT_SECRET_KEY")), nil
+	})
+	if err != nil {
+		return err
+	}
+	if claims, ok := parsedToken.Claims.(*models.TokenClaims); ok && parsedToken.Valid {
+		if claims.ID != id {
+			return errors.New("invalid token")
+		} else {
+			return nil
+		}
+	} else {
+		return errors.New("invalid token")
+	}
+}
+
+func IsValidToken(token string) error {
+	parsedToken, err := jwt.ParseWithClaims(token, &models.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(GetValue("JWT_SECRET_KEY")), nil
+	})
+	if err != nil {
+		return err
+	}
+	if claims, ok := parsedToken.Claims.(*models.TokenClaims); ok && parsedToken.Valid {
+		if claims.ExpiresAt.Unix() < time.Now().Unix() {
+			return errors.New("invalid token")
+		} else {
+			return nil
+		}
+	} else {
+		return errors.New("invalid token")
 	}
 }

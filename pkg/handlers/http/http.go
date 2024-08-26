@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"github.com/AuthService/pkg/internal/rpc"
 	model_http "github.com/AuthService/pkg/models/http"
 	"net/http"
 
@@ -70,11 +71,24 @@ func Validate(ctx *gin.Context) {
 		})
 		return
 	}
+	if err := rpc.CreateNode(res); err != nil {
+		go retriesCreateNode(3, res)
+	}
 	ctx.JSON(http.StatusOK, model_http.Response[model_http.RegisterResponse]{
 		Success: false,
 		Message: "",
 		Data:    res,
 	})
+}
+
+func retriesCreateNode(times int, node model_http.RegisterResponse) {
+	for times > 0 {
+		if err := rpc.CreateNode(node); err != nil {
+			times--
+		} else {
+			times = 0
+		}
+	}
 }
 
 func EditUser(ctx *gin.Context) {

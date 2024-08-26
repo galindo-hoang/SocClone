@@ -22,7 +22,7 @@ func InitDatabase(dbName string) error {
 		databaseName     = dbName
 	)
 
-	var dataSource string = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword, databaseHost, databasePort, databaseName)
+	var dataSource = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword, databaseHost, databasePort, databaseName)
 
 	database, err := gorm.Open(mysql.Open(dataSource), &gorm.Config{})
 	if err != nil {

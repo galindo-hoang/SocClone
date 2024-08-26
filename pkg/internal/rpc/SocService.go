@@ -3,12 +3,13 @@ package rpc
 import (
 	"context"
 	"errors"
-	pb "github.com/AuthService/pkg/internal/rpc/schema"
-	modelhttp "github.com/AuthService/pkg/models/http"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"time"
+
+	pb "github.com/AuthService/pkg/internal/rpc/schema"
+	modelhttp "github.com/AuthService/pkg/services/models"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func CreateNode(user modelhttp.RegisterResponse) error {

@@ -4,7 +4,7 @@ import (
 	"github.com/AuthService/pkg/database"
 	"github.com/AuthService/pkg/handlers/http"
 	"github.com/AuthService/pkg/handlers/rpc"
-	"github.com/AuthService/utils"
+	"github.com/AuthService/pkg/utils"
 )
 
 func main() {

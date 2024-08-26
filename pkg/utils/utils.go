@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AuthService/pkg/models"
-	modelhttp "github.com/AuthService/pkg/models/http"
+	"github.com/AuthService/pkg/repositories/models"
+	modelhttp "github.com/AuthService/pkg/services/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"

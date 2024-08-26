@@ -1,4 +1,4 @@
-package rbmq
+package mq
 
 // content-type 0 TextPlain
 // content-type 1 TextHTML

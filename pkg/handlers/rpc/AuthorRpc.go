@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	pb "github.com/AuthService/pkg/handlers/rpc/schema"
-	"github.com/AuthService/utils"
+	"github.com/AuthService/pkg/utils"
 	"google.golang.org/grpc"
 	"log"
 	"net"

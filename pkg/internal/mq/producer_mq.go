@@ -3,15 +3,14 @@ package mq
 import (
 	"context"
 	"fmt"
+	"github.com/AuthService/pkg/utils"
 	"log"
 	"time"
 
-	"github.com/AuthService/pkg/models/rbmq"
-	"github.com/AuthService/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func SendMessageMail(mail rbmq.MailRequest) error {
+func SendMessageMail(mail MailRequest) error {
 	var (
 		UserName = utils.GetValue("MQ_USERNAME")
 		password = utils.GetValue("MQ_PASSWORD")

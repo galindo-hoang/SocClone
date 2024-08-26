@@ -2,18 +2,31 @@ package http
 
 import (
 	"errors"
-	"github.com/AuthService/pkg/internal/rpc"
-	model_http "github.com/AuthService/pkg/models/http"
+	repo "github.com/AuthService/pkg/repositories/impl"
+	"github.com/AuthService/pkg/services/impl"
 	"net/http"
 
-	"github.com/AuthService/pkg/services"
+	"github.com/AuthService/pkg/internal/rpc"
+	model_http "github.com/AuthService/pkg/services/models"
+
 	"github.com/gin-gonic/gin"
 )
 
 func Login(ctx *gin.Context) {
 	var request model_http.LoginRequest
-	ctx.BindJSON(&request)
-	res, err := services.Login(request)
+	err := ctx.BindJSON(&request)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model_http.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	svc := impl.NewAuthServices(&repo.AuthRepository{}, &repo.CachingRepository{})
+
+	res, err := svc.Login(request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model_http.Response[any]{
 			Success: false,
@@ -26,14 +39,26 @@ func Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, model_http.Response[model_http.LogInResponse]{
 		Success: false,
 		Message: "",
-		Data:    res,
+		Data:    *res,
 	})
 }
 
 func Register(ctx *gin.Context) {
 	var request model_http.SignUpRequest
-	ctx.BindJSON(&request)
-	_, isExist := services.GetCache("register", request.UserName)
+	err := ctx.BindJSON(&request)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model_http.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	var caching = repo.CachingRepository{}
+	svc := impl.NewAuthServices(&repo.AuthRepository{}, &caching)
+
+	_, isExist := caching.GetCache("register", request.UserName)
 	if isExist {
 		ctx.JSON(http.StatusInternalServerError, model_http.Response[any]{
 			Success: false,
@@ -42,7 +67,7 @@ func Register(ctx *gin.Context) {
 		})
 		return
 	}
-	res, err := services.CreateUser(request)
+	res, err := svc.CreateUser(request)
 	if err != nil {
 		ctx.JSON(http.StatusOK, model_http.Response[any]{
 			Success: false,
@@ -55,14 +80,13 @@ func Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model_http.Response[model_http.RegisterResponse]{
 		Success: false,
 		Message: "",
-		Data:    res,
+		Data:    *res,
 	})
 }
 
 func Validate(ctx *gin.Context) {
 	var request model_http.ValidateUserRequest
-	ctx.Bind(&request)
-	res, err := services.ValidateSigUnUser(request)
+	err := ctx.Bind(&request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model_http.Response[any]{
 			Success: false,
@@ -71,13 +95,25 @@ func Validate(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := rpc.CreateNode(res); err != nil {
-		go retriesCreateNode(3, res)
+
+	svc := impl.NewAuthServices(&repo.AuthRepository{}, &repo.CachingRepository{})
+
+	res, err := svc.ValidateSigUnUser(request)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model_http.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+	if err := rpc.CreateNode(*res); err != nil {
+		go retriesCreateNode(3, *res)
 	}
 	ctx.JSON(http.StatusOK, model_http.Response[model_http.RegisterResponse]{
 		Success: false,
 		Message: "",
-		Data:    res,
+		Data:    *res,
 	})
 }
 

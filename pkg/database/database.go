@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
+	"github.com/AuthService/pkg/utils"
 
-	"github.com/AuthService/pkg/models"
-	"github.com/AuthService/utils"
+	"github.com/AuthService/pkg/repositories/models"
 	"github.com/bradfitz/gomemcache/memcache"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

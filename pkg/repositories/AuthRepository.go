@@ -1,10 +1,16 @@
-package impl
+package repositories
 
 import (
 	"errors"
 	"github.com/AuthService/pkg/database"
 	"github.com/AuthService/pkg/repositories/models"
 )
+
+type IAuthRepository interface {
+	GetUserFrom(username string) (*models.Users, error)
+	CreateUser(user models.Users) (*models.Users, error)
+	UpdateUser(user models.Users) (*models.Users, error)
+}
 
 type AuthRepository struct {
 }
@@ -37,7 +43,3 @@ func (s *AuthRepository) UpdateUser(user models.Users) (*models.Users, error) {
 	}
 	return &user, nil
 }
-
-//func (s *AuthRepository) DeleteUser(user models.Users) error {
-//	return nil
-//}

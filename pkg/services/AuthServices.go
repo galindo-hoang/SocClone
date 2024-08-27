@@ -1,21 +1,23 @@
-package impl
+package services
 
 import (
 	"errors"
 	"fmt"
+	"github.com/AuthService/pkg/database"
+	"github.com/AuthService/pkg/internal/mq"
 	"github.com/AuthService/pkg/repositories"
+	"github.com/AuthService/pkg/repositories/models"
+	modelhttp "github.com/AuthService/pkg/services/models"
+	"github.com/AuthService/pkg/utils"
 	"strconv"
 	"time"
-
-	"github.com/AuthService/pkg/utils"
-
-	"github.com/AuthService/pkg/internal/mq"
-	modelhttp "github.com/AuthService/pkg/services/models"
-
-	"github.com/AuthService/pkg/database"
-	"github.com/AuthService/pkg/repositories/models"
-	"github.com/bradfitz/gomemcache/memcache"
 )
+
+type IAuthServices interface {
+	CreateUser(user modelhttp.SignUpRequest) (*modelhttp.RegisterResponse, error)
+	Login(user modelhttp.LoginRequest) (*modelhttp.LogInResponse, error)
+	ValidateSigUnUser(user modelhttp.ValidateUserRequest) (*modelhttp.RegisterResponse, error)
+}
 
 type AuthServices struct {
 	authRepo repositories.IAuthRepository
@@ -41,7 +43,7 @@ func (s *AuthServices) CreateUser(user modelhttp.SignUpRequest) (*modelhttp.Regi
 		return nil, err
 	}
 
-	if err = addNewCache("register", user.UserName, otp, 300); err != nil {
+	if err = s.caching.AddCache("register", user.UserName, otp, 300); err != nil {
 		return nil, err
 	}
 
@@ -125,26 +127,4 @@ func (s *AuthServices) ValidateSigUnUser(user modelhttp.ValidateUserRequest) (*m
 		Email:    entity.Email,
 		Id:       strconv.Itoa(entity.ID),
 	}, nil
-}
-
-func addNewCache(path string, key string, value string, time int) error {
-	if time != 0 {
-		cacheError := database.Cache.Set(&memcache.Item{
-			Key:        fmt.Sprintf("%v/%v", path, key),
-			Value:      []byte(value),
-			Expiration: int32(time),
-		})
-		if cacheError != nil {
-			return cacheError
-		}
-	} else {
-		cacheError := database.Cache.Set(&memcache.Item{
-			Key:   fmt.Sprintf("%v/%v", path, key),
-			Value: []byte(value),
-		})
-		if cacheError != nil {
-			return cacheError
-		}
-	}
-	return nil
 }

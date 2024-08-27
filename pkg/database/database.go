@@ -44,6 +44,7 @@ func InitCache() {
 		cacheHost = utils.GetValue("CACHE_HOST")
 		cachePort = utils.GetValue("CACHE_PORT")
 	)
+	fmt.Printf("hello : %s\n", cacheHost)
 	Cache = memcache.New(fmt.Sprintf("%v:%v", cacheHost, cachePort))
 	fmt.Printf("Cache: %v\n", Cache)
 }

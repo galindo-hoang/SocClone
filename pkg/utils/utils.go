@@ -19,8 +19,13 @@ import (
 func GetValue(key string) string {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println(err.Error())
-		return ""
+		var opts = os.Getenv(key)
+		if len(opts) == 0 {
+			fmt.Println(err.Error())
+			return ""
+		} else {
+			return opts
+		}
 	}
 
 	return os.Getenv(key)

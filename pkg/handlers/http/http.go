@@ -2,8 +2,8 @@ package http
 
 import (
 	"errors"
-	repo "github.com/AuthService/pkg/repositories/impl"
-	"github.com/AuthService/pkg/services/impl"
+	repo "github.com/AuthService/pkg/repositories"
+	"github.com/AuthService/pkg/services"
 	"net/http"
 
 	"github.com/AuthService/pkg/internal/rpc"
@@ -24,7 +24,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	svc := impl.NewAuthServices(&repo.AuthRepository{}, &repo.CachingRepository{})
+	svc := services.NewAuthServices(&repo.AuthRepository{}, &repo.CachingRepository{})
 
 	res, err := svc.Login(request)
 	if err != nil {
@@ -56,7 +56,7 @@ func Register(ctx *gin.Context) {
 	}
 
 	var caching = repo.CachingRepository{}
-	svc := impl.NewAuthServices(&repo.AuthRepository{}, &caching)
+	svc := services.NewAuthServices(&repo.AuthRepository{}, &caching)
 
 	_, isExist := caching.GetCache("register", request.UserName)
 	if isExist {
@@ -96,7 +96,7 @@ func Validate(ctx *gin.Context) {
 		return
 	}
 
-	svc := impl.NewAuthServices(&repo.AuthRepository{}, &repo.CachingRepository{})
+	svc := services.NewAuthServices(&repo.AuthRepository{}, &repo.CachingRepository{})
 
 	res, err := svc.ValidateSigUnUser(request)
 	if err != nil {

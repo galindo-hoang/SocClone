@@ -61,27 +61,6 @@ func TestAddCache(t *testing.T) {
 		}
 		assert.Equal(t, testCase.expect, string(item), fmt.Sprintf("Expect: %v || actual: %v", testCase.expect, string(item)))
 	}
-
-	//chann := make(chan string, 1)
-	//t.Cleanup(func() {
-	//	fmt.Println("done")
-	//})
-	//
-	//go func() {
-	//	time.Sleep(1000 * time.Millisecond)
-	//	item, _ := caching.GetCache("hello", "world")
-	//	chann <- string(item)
-	//}()
-	//
-	//err := caching.AddCache("hello", "world", "done", 1)
-	//if err != nil {
-	//	t.Error(err)
-	//}
-	//
-	//data := <-chann
-	//if len(data) != 0 {
-	//	t.Fail()
-	//}
 }
 
 func TestMain(m *testing.M) {

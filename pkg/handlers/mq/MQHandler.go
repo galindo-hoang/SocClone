@@ -2,12 +2,13 @@ package mq
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/MailService/pkg/handlers"
 	service "github.com/MailService/pkg/service/models"
 	"github.com/MailService/pkg/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log"
-	"os"
 )
 
 type MqClient struct {
@@ -36,7 +37,7 @@ func New() {
 		mqpwd:  os.Getenv("MQ_PASSWORD"),
 	}
 
-	fmt.Println(client)
+	fmt.Printf("huy.hoang111 %s\n", client)
 
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://%v:%v@%v:%v/", client.mquser, client.mqpwd, client.mqhost, client.mqport))
 	failOnError(err, "Failed to connect to RabbitMQ")

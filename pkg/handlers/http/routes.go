@@ -10,6 +10,7 @@ import (
 func InitRoutes() {
 	var router = gin.New()
 	setupRoutes(router)
+	log.Println("listening on :3001")
 	if err := router.Run(":3001"); err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +33,7 @@ func setupRoutes(router *gin.Engine) {
 				})
 			}
 		})
-		v1.POST("/friends/:user_id", follow)
-		v1.DELETE("/friends/:user_id", unfollow)
+		v1.POST("/friends", follow)
+		v1.DELETE("/friends", unfollow)
 	}
 }

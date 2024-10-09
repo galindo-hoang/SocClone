@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "github.com/SocService/pkg/handlers/rpc/schema";
+
+package auth2soc;
+
+service Auth2SocService {
+  rpc CreateNode(MakeNodeRequest) returns (MakeNodeResponse) {}
+}
+
+message MakeNodeRequest {
+  string id = 1;
+  string name = 2;
+  string image = 3;
+}
+
+message MakeNodeResponse {
+  bool success = 1;
+  string message = 2;
+}
+

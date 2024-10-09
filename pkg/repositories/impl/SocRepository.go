@@ -13,15 +13,22 @@ import (
 	"log"
 )
 
-type SocRepo struct {
+type SocRepository struct {
 }
 
-func (s *SocRepo) MakeRelation(from string, to string) error {
+func (s *SocRepository) MakeRelation(from string, to string) error {
 	driver, err := database.NeoDriver()
 	if err != nil {
 		return err
 	}
 	ctx := context.Background()
+	defer func(driver neo4j.DriverWithContext, ctx context.Context) {
+		err := driver.Close(ctx)
+		if err != nil {
+			log.Printf(err.Error())
+		}
+	}(driver, ctx)
+
 	if err := driver.VerifyConnectivity(ctx); err != nil {
 		return err
 	}
@@ -43,7 +50,7 @@ func (s *SocRepo) MakeRelation(from string, to string) error {
 	return nil
 }
 
-func (s *SocRepo) MakeDetach(from string, to string) error {
+func (s *SocRepository) MakeDetach(from string, to string) error {
 	driver, err := database.NeoDriver()
 	if err != nil {
 		return err
@@ -68,7 +75,7 @@ func (s *SocRepo) MakeDetach(from string, to string) error {
 	return nil
 }
 
-func (s *SocRepo) CreateNode(person model.Person) error {
+func (s *SocRepository) CreateNode(person model.Person) error {
 	ctx := context.Background()
 	driver, err := database.NeoDriver()
 	if err != nil {
@@ -104,7 +111,7 @@ func (s *SocRepo) CreateNode(person model.Person) error {
 	return nil
 }
 
-func (s *SocRepo) GetListRelationsFrom(person model.Person, offset int, limit int) ([]*model.Person, error) {
+func (s *SocRepository) GetFollowings(id string, offset int, limit int) ([]*model.Person, error) {
 	ctx := context.Background()
 	driver, err := database.NeoDriver()
 	if err != nil {
@@ -125,7 +132,7 @@ func (s *SocRepo) GetListRelationsFrom(person model.Person, offset int, limit in
 	result, err := neo4j.ExecuteQuery(ctx,
 		driver,
 		"MATCH (f: User{id: $from})-[KNOWS]->(d: User) RETURN d LIMIT $limit",
-		map[string]any{"from": person.Id, "limit": limit},
+		map[string]any{"from": id, "limit": limit},
 		neo4j.EagerResultTransformer,
 		neo4j.ExecuteQueryWithDatabase(utils.GetValue("NEO_DATABASE")),
 	)
@@ -155,7 +162,7 @@ func (s *SocRepo) GetListRelationsFrom(person model.Person, offset int, limit in
 	return res, nil
 }
 
-func (s *SocRepo) GetFromListRelations(person model.Person, limit int, offset int) ([]*model.Person, error) {
+func (s *SocRepository) GetFollowers(id string, limit int, offset int) ([]*model.Person, error) {
 	ctx := context.Background()
 	driver, err := database.NeoDriver()
 	if err != nil {
@@ -173,7 +180,7 @@ func (s *SocRepo) GetFromListRelations(person model.Person, limit int, offset in
 	}
 
 	result, err := neo4j.ExecuteQuery(ctx, driver, "MATCH (f: User)-[r:KNOWS]->(d: User{id: $id}) return d LIMIT $limit", map[string]any{
-		"id":    person.Id,
+		"id":    id,
 		"limit": limit,
 	}, neo4j.EagerResultTransformer, neo4j.ExecuteQueryWithDatabase(utils.GetValue("NEO_DATABASE")))
 	if err != nil {

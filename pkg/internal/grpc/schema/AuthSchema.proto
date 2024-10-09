@@ -1,0 +1,29 @@
+// checking jwt
+syntax = "proto3";
+
+option go_package = "github.com/SocService/pkg/internal/grpc/schema";
+
+package auth;
+
+message TokenRequest {
+  string token = 1;
+}
+
+message TokenResponse {
+  bool isValid = 1;
+  string message = 2;
+}
+
+message VerifyTokenRequest {
+  string token = 1;
+  string id = 2;
+}
+
+
+service AuthenticationService {
+  rpc IsValidToken(TokenRequest) returns (TokenResponse) {}
+}
+
+service AuthorizationService {
+  rpc VerifyToken(VerifyTokenRequest) returns (TokenResponse) {}
+}

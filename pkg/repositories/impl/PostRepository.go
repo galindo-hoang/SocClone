@@ -16,8 +16,8 @@ func NewPostRepository() repositories.IPostRepository {
 
 func (s *PostRepository) FetchPostFromId(id int) (*models.Posts, error) {
 	var post *models.Posts = nil
-	database.DB.Raw("SELECT * FROM posts WHERE id = ?", id).Scan(&post)
-	if post != nil {
+	database.DB.Raw("SELECT * FROM posts WHERE ID = ?", id).Scan(&post)
+	if post == nil {
 		return nil, errors.New("post is invalid")
 	}
 	return post, nil
@@ -57,22 +57,31 @@ func (s *PostRepository) DeletePost(id int) error {
 	return nil
 }
 
-func (s *PostRepository) CreateLike(likes *models.Like) (*models.Posts, error) {
+func (s *PostRepository) CreateLike(likes *models.Likes) (int, error) {
 	var post *models.Posts = nil
 	database.DB.Raw("SELECT * FROM posts WHERE id = ?", likes.PostId).Scan(&post)
 	if post == nil {
-		return nil, errors.New("post is invalid")
+		return 0, errors.New("post is invalid")
 	}
 	post.Likes = append(post.Likes, likes)
 	result := database.DB.Save(&post)
 	if result.Error != nil {
-		return nil, result.Error
+		return 0, result.Error
 	}
-	return post, nil
+	return len(post.Likes), nil
+}
+
+func (s *PostRepository) DeleteLike(likes *models.Likes) error {
+	var res models.Posts
+	result := database.DB.Delete(&res, likes.PostId, likes.AuthId)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 // switch using realtime
-func (s *PostRepository) CommentPost(comment *models.Comment) (*models.Posts, error) {
+func (s *PostRepository) CommentPost(comment *models.Comments) (*models.Posts, error) {
 	var post *models.Posts = nil
 	database.DB.Raw("SELECT * FROM posts WHERE id = ?", comment.PostId).Scan(&post)
 	if post == nil {
@@ -85,3 +94,17 @@ func (s *PostRepository) CommentPost(comment *models.Comment) (*models.Posts, er
 	}
 	return post, nil
 }
+
+func (s *PostRepository) DeleteComment(posts *models.Comments) error {
+	var res models.Comments
+	result := database.DB.Delete(&res, posts.ID)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+
+}
+
+//func (s *PostRepository) UpdateImage(posts models.Posts) (*models.Posts, error) {
+//	return nil, nil
+//}

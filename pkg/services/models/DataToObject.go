@@ -18,23 +18,26 @@ type PostObject struct {
 }
 
 type MPostObject struct {
-	PostId      string  `json:"postId"`
+	PostId      int     `json:"postId"`
 	Author      string  `json:"author"`
 	Description *string `json:"description"`
 }
 
 type LikePostObject struct {
-	From   string `json:"id"`
-	PostId string `json:"post_id"`
+	From     string `json:"id"`
+	PostId   int    `json:"post_id"`
+	NumLikes int    `json:"num_likes"`
 }
 
 type CommentPostObject struct {
-	From   string `json:"id"`
-	PostId string `json:"post_id"`
+	Id     int    `json:"id"`
+	From   string `json:"from"`
+	PostId int    `json:"post_id"`
+	Text   string `json:"text"`
 }
 
 type PostRes struct {
-	ID          string    `json:"id"`
+	ID          int       `json:"id"`
 	Likes       int       `json:"likes"`
 	Author      string    `json:"author"`
 	Images      []string  `json:"images"`
@@ -44,7 +47,7 @@ type PostRes struct {
 }
 
 type ListPostUserObject struct {
-	ID     string `json:"id"`
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
+	ID     int `json:"id"`
+	Limit  int `json:"limit"`
+	Offset int `json:"offset"`
 }

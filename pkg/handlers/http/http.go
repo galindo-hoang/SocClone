@@ -28,7 +28,8 @@ func createPost(ctx *gin.Context) {
 		})
 		return
 	}
-	svc := service.NewPostService(repo.NewPostRepository())
+
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
 	res, err := svc.CreatePost(post)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
@@ -46,8 +47,17 @@ func createPost(ctx *gin.Context) {
 }
 
 func getPost(ctx *gin.Context) {
-	id := ctx.Param("id")
-	svc := service.NewPostService(repo.NewPostRepository())
+	id, err := strconv.Atoi(ctx.Param("postId"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Success: true,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
 	res, err := svc.GetPost(id)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
@@ -83,7 +93,7 @@ func updatePost(ctx *gin.Context) {
 		})
 		return
 	}
-	svc := service.NewPostService(repo.NewPostRepository())
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
 	res, err := svc.UpdatePost(post)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
@@ -120,8 +130,8 @@ func deletePost(ctx *gin.Context) {
 		return
 	}
 
-	svc := service.NewPostService(repo.NewPostRepository())
-	res, err := svc.DeletePost(post.PostId)
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
+	err := svc.DeletePost(post.PostId)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
 			Success: true,
@@ -133,7 +143,6 @@ func deletePost(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, models.Response[models.PostRes]{
 		Success: true,
-		Data:    *res,
 	})
 }
 
@@ -158,8 +167,42 @@ func commentPost(ctx *gin.Context) {
 		return
 	}
 
-	svc := service.NewPostService(repo.NewPostRepository())
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
 	if err := svc.CommentPost(post); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, models.Response[models.PostRes]{
+		Success: true,
+	})
+}
+
+func removeComment(ctx *gin.Context) {
+	var post models.CommentPostObject
+	if err := ctx.BindJSON(&post); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	token := ctx.GetHeader("Authorization")
+	if err := rpc.VerifyToken(token, post.From); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
+	if err := svc.DeleteComment(post); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
 			Message: err.Error(),
 			Data:    err,
@@ -192,8 +235,46 @@ func likePost(ctx *gin.Context) {
 		return
 	}
 
-	svc := service.NewPostService(repo.NewPostRepository())
-	if err := svc.LikePost(post); err != nil {
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
+	likes, err := svc.LikePost(post)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, models.Response[models.LikePostObject]{
+		Success: true,
+		Data: models.LikePostObject{
+			NumLikes: likes,
+		},
+	})
+}
+
+func disLikePost(ctx *gin.Context) {
+	var post models.LikePostObject
+	if err := ctx.BindJSON(&post); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	token := ctx.GetHeader("Authorization")
+	if err := rpc.VerifyToken(token, post.From); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
+
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
+	if err := svc.UnLikePost(post); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
 			Message: err.Error(),
 			Data:    err,
@@ -206,7 +287,15 @@ func likePost(ctx *gin.Context) {
 }
 
 func getListPosts(ctx *gin.Context) {
-	userId := ctx.Param("user_id")
+	userId, err := strconv.Atoi(ctx.Param("user_id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{
+			Success: false,
+			Message: err.Error(),
+			Data:    err,
+		})
+		return
+	}
 	offSet, err := strconv.Atoi(ctx.Param("offset"))
 	if err != nil {
 		offSet = 0
@@ -220,7 +309,7 @@ func getListPosts(ctx *gin.Context) {
 		Offset: offSet,
 		Limit:  limit,
 	}
-	svc := service.NewPostService(repo.NewPostRepository())
+	svc := service.NewPostService(repo.NewPostRepository(), repo.NewCloudStorageRepository())
 	res, err := svc.GetListPostFromWall(listPost)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, models.Response[any]{

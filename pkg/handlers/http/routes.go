@@ -24,10 +24,12 @@ func setupRoutes(router *gin.Engine) {
 	{
 		posts.POST("/create", createPost)
 		posts.GET("/:postId", getPost)
-		posts.PUT("/:postId", updatePost)
-		posts.DELETE("/:postId", deletePost)
+		posts.PUT("/", updatePost)
+		posts.DELETE("/", deletePost)
 
-		posts.POST("/:postId/comments", commentPost)
-		posts.POST("/:postId/likes", likePost)
+		posts.POST("/comment", commentPost)
+		posts.DELETE("/comment", removeComment)
+		posts.POST("/likes", likePost)
+		posts.DELETE("/likes", disLikePost)
 	}
 }

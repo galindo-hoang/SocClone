@@ -5,6 +5,7 @@ import (
 	"github.com/PostService/pkg/repositories/models"
 	"github.com/PostService/pkg/utils"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/minio/minio-go"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -26,7 +27,7 @@ func InitDatabase(dbName string) error {
 	if err != nil {
 		return err
 	}
-	if err := database.AutoMigrate(&models.Posts{}); err != nil {
+	if err := database.AutoMigrate(&models.Posts{}, &models.Images{}, &models.Comments{}, &models.Likes{}); err != nil {
 		return err
 	}
 	DB = database
@@ -43,4 +44,26 @@ func InitCache() {
 	)
 	Cache = memcache.New(fmt.Sprintf("%v:%v", cacheHost, cachePort))
 	fmt.Printf("Cache: %v\n", Cache)
+}
+
+func InitMinio(bucketName string) (*minio.Client, error) {
+	var (
+		location        = "us-east-1"
+		host            = utils.GetValue("MINIO_HOST")
+		port            = utils.GetValue("MINIO_PORT")
+		accessKeyID     = utils.GetValue("MINIO_ACCESS_KEY")
+		secretAccessKey = utils.GetValue("MINIO_SECRET_ACCESS_KEY")
+	)
+	minioClient, err := minio.New(fmt.Sprintf("%v:%v", host, port), accessKeyID, secretAccessKey, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := minioClient.MakeBucket(bucketName, location); err != nil {
+		exist, err := minioClient.BucketExists(bucketName)
+		if err != nil || !exist {
+			return nil, err
+		}
+	}
+	return minioClient, nil
 }

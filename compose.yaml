@@ -1,0 +1,23 @@
+services:
+  auth_service:
+    build: .
+    container_name: "auth_service"
+    env_file: ".env"
+  memcache:
+    container_name: "auth_caching"
+    image: "memcached:latest"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=ROOTNAME
+      - MINIO_ROOT_PASSWORD=12345678
+      - MINIO_CONSOLE_ADDRESS=:9001
+  database:
+    container_name: "auth_database"
+    image: "mysql:latest"
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    command: ["executable", "arg"]
